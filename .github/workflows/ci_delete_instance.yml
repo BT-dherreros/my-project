@@ -43,7 +43,7 @@ jobs:
       - name: "Delete Instance"
         id: delete_instance
         run: |
-         bt deploy -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }} --no-auto-update
+         bt db -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }}
 
       # Always run as last step
       - name: "Send Webhook notification"
@@ -53,7 +53,5 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "status": "${{ job.status }}",
-              "repository": "${{ github.repository }}",
-              "commit": "${{ github.sha }}",
-              "workflow": "${{ github.workflow }}"
+              "instance_name": "${{ inputs.instance_name }}",
             }'

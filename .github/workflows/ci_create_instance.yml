@@ -14,13 +14,17 @@ on:
         description: 'Target Server'
         required: false
         type: string
+      database_name:
+        description: 'Database Name'
+        required: false
+        type: string
 
 jobs:
 
-#  call-workflow-build-deploy-harbor:
-#    name: "Build in Harbor"
-#    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
-#    secrets: inherit
+  call-workflow-build-deploy-harbor:
+    name: "Build in Harbor"
+    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
+    secrets: inherit
 
   create_instance:
     name: "Create Instance"
@@ -50,6 +54,21 @@ jobs:
         run: |
          bt deploy -m update -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name}}" --no-auto-update
 
+      - name: "Database Creation"
+        id: database_creation
+        if: ${{ inputs.database_name == None }}
+        run: |
+          bt deploy -m update -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name}}" -i base
+
+      - name: "Database Copy"
+        id: database_creation
+        if: ${{ inputs.database_name != '' }}
+        run: |
+          new_instance_name ="${{ inputs.instance_name }}"
+          source_branch="${new_instance_name%.*}"
+          bt db copy -s "docker-sock://${{ inputs.server }}.bt-group.com?docker_socket=/home/odoo/.docker.sock&container=${source_branch}" 
+           "docker-sock://${{ inputs.server }}.bt-group.com?docker_socket=/home/odoo/.docker.sock&container=${new_instance_name}"
+
       # Always run as last step
       - name: "Send Webhook notification"
         if: always()
@@ -58,7 +77,6 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "status": "${{ job.status }}",
-              "repository": "${{ github.repository }}",
-              "commit": "${{ github.sha }}",
-              "workflow": "${{ github.workflow }}"
+              "instance_name": "${{ inputs.instance_name }}",
+              "database_name": "${{ inputs.database_name }}",
             }'
