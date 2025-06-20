@@ -17,12 +17,12 @@ on:
 
 jobs:
 
-  call-workflow-build-deploy-harbor:
-    name: "Build in Harbor"
-    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
-    secrets: inherit
+#  call-workflow-build-deploy-harbor:
+#    name: "Build in Harbor"
+#    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
+#    secrets: inherit
 
-  testing:
+  create_instance:
     name: "Create Instance"
     runs-on: ubuntu-latest
     env:

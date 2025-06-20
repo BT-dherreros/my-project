@@ -17,7 +17,7 @@ on:
 
 jobs:
 
-  testing:
+  delete_instance:
     name: "Delete Instance"
     runs-on: ubuntu-latest
     env:
