@@ -46,7 +46,7 @@ jobs:
          bt deploy -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }} --no-auto-update
 
       # Always run as last step
-      - name: Send Webhook notification
+      - name: "Send Webhook notification"
         if: always()
         run: |
           curl -X POST https://braintec.com/notify_delete \
