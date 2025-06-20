@@ -15,7 +15,7 @@ on:
         description: 'Target Server'
         required: false
         type: string
-      bt_cli_branch:   # <-- Added since you're using it later
+      bt_cli_branch:
         description: 'bt-cli branch'
         required: true
         type: string
@@ -24,14 +24,11 @@ jobs:
   harbor_build:
     uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
     secrets: inherit
-    
+
   build:
+    needs: harbor_build
     runs-on: ubuntu-latest
     steps:
-      - name: Harbor build and Push
-        uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
-        secrets: inherit
-
       - name: Install BT-CLI
         id: install_bt_cli
         uses: ./ci_workflows/.github/actions/bt_cli_installation  
