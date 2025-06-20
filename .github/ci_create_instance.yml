@@ -1,0 +1,38 @@
+name: Create New Instance
+on:
+  workflow_dispatch:
+    inputs:
+      remote_repo:
+        description: 'Name of the Instance repo'
+        required: true
+        type: string
+      instance_name:
+        description: 'Name of the new Instance'
+        required: true
+        type: string
+      server:
+        description: 'Target Server'
+        required: false
+        type: string
+        
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Simulate build
+        run: |
+          echo "Build started"
+          # exit 1  # Uncomment this to simulate a failure
+
+      - name: Send webhook notification
+        if: always()  # Runs regardless of success or failure
+        run: |
+          curl -X POST https://your-webhook-url.com/notify \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "${{ job.status }}",
+              "repository": "${{ github.repository }}",
+              "commit": "${{ github.sha }}",
+              "workflow": "${{ github.workflow }}"
+            }'
+
