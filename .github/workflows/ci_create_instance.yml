@@ -1,5 +1,4 @@
 name: Create New Instance
-
 on:
   workflow_dispatch:
     inputs:
@@ -15,34 +14,30 @@ on:
         description: 'Target Server'
         required: false
         type: string
-      bt_cli_branch:
-        description: 'bt-cli branch'
-        required: true
-        type: string
-
+        
 jobs:
-  harbor_build:
-    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
-    secrets: inherit
-
   build:
-    needs: harbor_build
     runs-on: ubuntu-latest
     steps:
-      - name: Install BT-CLI
+      - name: Harbor build and Push
+        uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
+    	secrets: inherit
+    	
+    - name: "Install BT-CLI"
         id: install_bt_cli
         uses: ./ci_workflows/.github/actions/bt_cli_installation  
         with:
           secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
           secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
           bt_cli_branch: ${{ inputs.bt_cli_branch }}
-
-      - name: Create Instance via BT update
-        id: create_instance
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
-        run: |
-          bt deploy -m update -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }} --no-auto-update
+          
+     - name: "Create Instance via BT update"
+      	 id: create_instance
+      	 env:
+           GITHUB_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+         run: |
+           bt deploy -m update -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name}}" --no-auto-update
+           
 
       - name: Send Webhook notification
         if: always()
@@ -55,4 +50,3 @@ jobs:
               "commit": "${{ github.sha }}",
               "workflow": "${{ github.workflow }}"
             }'
-
