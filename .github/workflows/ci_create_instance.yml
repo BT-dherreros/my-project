@@ -21,6 +21,10 @@ on:
         type: string
 
 jobs:
+  harbor_build:
+    uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
+    secrets: inherit
+    
   build:
     runs-on: ubuntu-latest
     steps:
