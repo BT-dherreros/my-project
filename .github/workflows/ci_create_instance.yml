@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       remote_repo:
-        description: 'Name of the Instance repo'
+        description: 'Name of the Instance Repo'
         required: true
         type: string
       instance_name:
@@ -19,15 +19,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Simulate build
-        run: |
-          echo "Build started"
-          # exit 1  # Uncomment this to simulate a failure
+      - name: Harbor build and Push
+        uses: brain-tec/ci_workflows/.github/workflows/bt_ci_build_push_harbor.yml@master
+    	secrets: inherit
+    	
+    - name: "Install BT-CLI"
+        id: install_bt_cli
+        uses: ./ci_workflows/.github/actions/bt_cli_installation  
+        with:
+          secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+          secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
+          bt_cli_branch: ${{ inputs.bt_cli_branch }}
+          
+     - name: "Create Instance via BT update"
+      	 id: create_instance
+      	 env:
+           GITHUB_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+         run: |
+           bt deploy -m update -s ${{ inputs.server }}.bt-group.com -p ${{inputs.remote_repo}}:${{inputs.instance_name}}" --no-auto-update
+           
 
-      - name: Send webhook notification
-        if: always()  # Runs regardless of success or failure
+      - name: Send Webhook notification
+        if: always()
         run: |
-          curl -X POST https://your-webhook-url.com/notify \
+          curl -X POST https://braintec.com/notify_create \
             -H "Content-Type: application/json" \
             -d '{
               "status": "${{ job.status }}",
@@ -35,4 +50,3 @@ jobs:
               "commit": "${{ github.sha }}",
               "workflow": "${{ github.workflow }}"
             }'
-
