@@ -1,0 +1,47 @@
+name: Delete Instance
+on:
+  workflow_dispatch:
+    inputs:
+      remote_repo:
+        description: 'Name of the Instance Repo'
+        required: true
+        type: string
+      instance_name:
+        description: 'Name of the new Instance'
+        required: true
+        type: string
+      server:
+        description: 'Target Server'
+        required: false
+        type: string
+        
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    - name: "Install BT-CLI"
+        id: install_bt_cli
+        uses: ./ci_workflows/.github/actions/bt_cli_installation  
+        with:
+          secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+          secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
+          bt_cli_branch: ${{ inputs.bt_cli_branch }}
+          
+     - name: "Delete Instance"
+      	 id: delete_instance
+      	 env:
+           GITHUB_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+         run: |
+           bt deploy -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }}"
+           
+
+      - name: Send Webhook notification
+        if: always()
+        run: |
+          curl -X POST https://braintec.com/notify_delete \
+            -H "Content-Type: application/json" \
+            -d '{
+              "status": "${{ job.status }}",
+              "repository": "${{ github.repository }}",
+              "commit": "${{ github.sha }}",
+              "workflow": "${{ github.workflow }}"
+            }'
