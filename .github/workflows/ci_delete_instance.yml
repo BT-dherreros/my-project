@@ -1,5 +1,4 @@
 name: Delete Instance
-
 on:
   workflow_dispatch:
     inputs:
@@ -15,30 +14,38 @@ on:
         description: 'Target Server'
         required: false
         type: string
-      bt_cli_branch:
-        description: 'bt-cli branch'
-        required: true
-        type: string
 
 jobs:
-  build:
+
+  testing:
+    name: "Delete Instance"
     runs-on: ubuntu-latest
+    env:
+      PYTHONUNBUFFERED: 1
+      HARBOR_ROBOT_AUTH: ${{ secrets.HARBOR_GITHUB_ACTION_BT_DOCKER_PULL_USER }}:${{ secrets.HARBOR_GITHUB_ACTION_BT_DOCKER_PULL_PASS }}  # Also for pull
+    if: (github.event_name == 'push' && (contains(github.event.head_commit.message, 'Merge pull request') || contains(github.event.head_commit.message, 'Syncing with commit'))) || github.event_name == 'pull_request'
     steps:
-      - name: Install BT-CLI
+      - name: "Checkout ci_workflows"
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          token: ${{ secrets.ACTIONS_READ_TOKEN }}
+          repository: brain-tec/ci_workflows.git
+          path: 'ci_workflows'
+
+      - name: "Install BT-CLI"
         id: install_bt_cli
-        uses: ./ci_workflows/.github/actions/bt_cli_installation  
+        uses: ./ci_workflows/.github/actions/bt_cli_installation
         with:
           secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
           secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
-          bt_cli_branch: ${{ inputs.bt_cli_branch }}
 
-      - name: Delete Instance
+      - name: "Delete Instance"
         id: delete_instance
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
         run: |
-          bt deploy -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }} --no-auto-update
+         bt deploy -m rm -s ${{ inputs.server }}.bt-group.com -p ${{ inputs.remote_repo }}:${{ inputs.instance_name }} --no-auto-update
 
+      # Always run as last step
       - name: Send Webhook notification
         if: always()
         run: |
@@ -50,4 +57,3 @@ jobs:
               "commit": "${{ github.sha }}",
               "workflow": "${{ github.workflow }}"
             }'
-
