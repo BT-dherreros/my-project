@@ -38,12 +38,12 @@ jobs:
 #          repository: brain-tec/ci_workflows.git
 #          path: 'ci_workflows'
 #
-#      - name: "Install BT-CLI"
-#        id: install_bt_cli
-#        uses: ./ci_workflows/.github/actions/bt_cli_installation
-#        with:
-#          secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
-#          secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
+      - name: "Install BT-CLI"
+        id: install_bt_cli
+        uses: brain-tec/ci_workflows/tree/master/.github/actions/bt_cli_installation
+        with:
+          secret_ACTIONS_READ_TOKEN: ${{ secrets.ACTIONS_READ_TOKEN }}
+          secret_ACTIONS_READ_SSH: ${{ secrets.ACTIONS_READ_SSH }}
 #
 #      - name: "Create Instance"
 #        id: create_instance
