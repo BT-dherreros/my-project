@@ -53,5 +53,6 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{
               "status": "${{ job.status }}",
+              "repository": "${{ github.repository }}",
               "instance_name": "${{ inputs.instance_name }}",
             }'
